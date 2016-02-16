@@ -1,0 +1,106 @@
+#!/usr/bin/env python3
+
+"""
+Create an SSH config file depending on which networks we are in.
+"""
+
+import copy
+import datetime
+import os
+import pathlib
+import pickle
+import re
+import tempfile
+import shutil
+import sys
+
+from ssh_autoconfig.zones import get_zones
+
+# output environment variables to DEBUGFILE
+DEBUG = False
+DEBUG_FILE = "/tmp/ssh-autoconfig"
+
+# where to find ssh_config parts
+PARTS_DIR = "/etc/ssh/ssh_config_parts"
+# where to save the resulting ssh_config
+SSH_CONFIG = "/etc/ssh/ssh_config"
+
+# convert filenames to Paths
+DEBUG_FILE = pathlib.Path(DEBUG_FILE)
+PARTS_DIR = pathlib.Path(PARTS_DIR)
+SSH_CONFIG = pathlib.Path(SSH_CONFIG)
+
+comment_re = re.compile("^\s*#|$")
+
+if DEBUG:
+    with DEBUG_FILE.open("a") as debugfile:
+        print("=" * 80, file = debugfile)
+        for key in os.environ:
+            print("%s = %s" % (key, os.environ[key]), file = debugfile)
+        print("=" * 80, file = debugfile)
+
+# get active zones
+zones_active, zones_inactive = get_zones()
+
+# create new config file
+
+# all active and inactive zones (merged old and new states)
+
+def cat(source):
+    with source.open("r") as source_file:
+        for line in source_file.readlines():
+            if not comment_re.match(line):
+                new_config_file.write(line)
+
+new_config_file_tuple = tempfile.mkstemp(prefix = "ssh_config")
+new_config_file = os.fdopen(new_config_file_tuple[0], "w")
+new_config_file_name = pathlib.Path(new_config_file_tuple[1])
+
+# File header
+print("\
+# vim:filetype=sshconfig\n\
+# Created %s\n\
+# Used zones: %s\n\
+# Unused zones: %s\n" % \
+(   str(datetime.datetime.now()),
+    ", ".join(zones_active),
+    ", ".join(zones_inactive)
+), \
+file = new_config_file)
+
+# File body
+config_parts = PARTS_DIR.iterdir()
+common_config_parts = []
+default_config_parts = []
+# specialized files, values will precede those from common files
+for config_part in config_parts:
+    suf = config_part.suffix[1:]
+    # skip common and default for now
+    if suf == "default":
+        default_config_parts.append(config_part)
+        continue
+    if suf == "common":
+        common_config_parts.append(config_part)
+        continue
+    # check whether all zones are active
+    # cut the leading dots
+    part_zones = {zone[1:] for zone in config_part.suffixes}
+    if not (part_zones - zones_active):
+        cat(config_part)
+# common stuff (zone-unspecific)
+for config_part in common_config_parts:
+    cat(config_part)
+# last are the defaults
+for config_part in default_config_parts:
+    cat(config_part)
+
+new_config_file.close()
+
+# now install the new config or print it (if SSH_CONFIG is not writable)
+if os.access(str(SSH_CONFIG), os.W_OK, effective_ids = True):
+    new_config_file_name.replace(SSH_CONFIG)
+    SSH_CONFIG.chmod(0o644)
+else:
+    with new_config_file_name.open("r") as f:
+        print(f.read())
+        new_config_file_name.unlink()

@@ -1,0 +1,9 @@
+# vim:filetype=sshconfig
+
+# Use proxy if we don't have IPv6
+Host myipv6host
+    ProxyCommand ssh -W %h:%p myipv6gateway
+
+# Home server
+Host myhomeserver
+    HostName myhomeserver.example.com

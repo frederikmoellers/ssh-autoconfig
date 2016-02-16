@@ -1,0 +1,5 @@
+# vim:filetype=sshconfig
+
+# No proxy if we have IPv6
+Host myipv6host
+    ProxyCommand none

@@ -1,0 +1,6 @@
+# vim:filetype=sshconfig
+
+# Directly connect to home server
+Host myhomeserver myhomeserver.example.com
+    HostKeyAlias myhomeserver.example.com
+    HostName myhomeserver.lan.example.com

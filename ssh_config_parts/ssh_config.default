@@ -1,0 +1,8 @@
+# vim:filetype=sshconfig
+
+# Common (previously in /etc/ssh/ssh_config)
+Host *
+    SendEnv LANG LC_*
+    HashKnownHosts yes
+    GSSAPIAuthentication yes
+    GSSAPIDelegateCredentials no
