@@ -2,7 +2,8 @@
 
 # Common (previously in /etc/ssh/ssh_config)
 Host *
-    SendEnv LANG LC_*
+    CanonicalizeHostname always
     HashKnownHosts yes
     GSSAPIAuthentication yes
     GSSAPIDelegateCredentials no
+    SendEnv LANG LC_*
