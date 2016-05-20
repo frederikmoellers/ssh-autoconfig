@@ -21,17 +21,26 @@ PARTS = $(shell find ssh_config_parts -type f)
 
 .PHONY: all install uninstall
 
+checkroot:
+	@# check if run as root
+	@runner=`whoami` ; \
+	if test "$$runner" != "root" -a "$(PREFIX)" = "/usr/local" ; \
+	then \
+		echo "You need to be root to install this program." ; \
+		exit 1 ; \
+	fi
+
 all:
 	$(info Nothing to compile. Type 'make install' to install or 'make uninstall' to uninstall.)
 
-install:
+install: checkroot
 	$(INSTALL) -m 0755 -D -t $(BINDIR) $(BIN)
 	$(INSTALL) -m 0644 -D -t $(LIBDIR) $(LIBS)
 	$(INSTALL) -m 0644 -D -t $(PARTSDIR) $(PARTS)
 	# create links
 	$(foreach linkloc, $(LINKS), $(LINK) -fs $(BINDIR)/$(BIN) $(linkloc);)
 
-uninstall:
+uninstall: checkroot
 	rm -rf $(BINDIR)/$(BIN)
 	rm -rf $(LIBDIR)
 	rm -rf $(PARTSDIR)
