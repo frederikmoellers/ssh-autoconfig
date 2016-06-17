@@ -19,9 +19,10 @@ BIN = ssh-autoconfig
 LIBS = __init__.py zones.py zones_user.py
 PARTS = $(shell find ssh_config_parts -type f)
 
-.PHONY: all install uninstall
+.PHONY: all install install-links install-parts install-program install-nolinks uninstall
 
 checkroot:
+	@echo "running checkroot"
 	@# check if run as root
 	@runner=`whoami` ; \
 	if test "$$runner" != "root" -a "$(PREFIX)" = "/usr/local" ; \
@@ -33,12 +34,19 @@ checkroot:
 all:
 	$(info Nothing to compile. Type 'make install' to install or 'make uninstall' to uninstall.)
 
-install: checkroot
+install: install-links install-nolinks
+
+install-links: checkroot
+	$(foreach linkloc, $(LINKS), $(LINK) -fs $(BINDIR)/$(BIN) $(linkloc);)
+
+install-parts: checkroot
+	$(INSTALL) -m 0644 -D -t $(PARTSDIR) $(PARTS)
+
+install-program: checkroot
 	$(INSTALL) -m 0755 -D -t $(BINDIR) $(BIN)
 	$(INSTALL) -m 0644 -D -t $(LIBDIR) $(LIBS)
-	$(INSTALL) -m 0644 -D -t $(PARTSDIR) $(PARTS)
-	# create links
-	$(foreach linkloc, $(LINKS), $(LINK) -fs $(BINDIR)/$(BIN) $(linkloc);)
+
+install-nolinks: install-parts install-program
 
 uninstall: checkroot
 	rm -rf $(BINDIR)/$(BIN)
