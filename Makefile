@@ -22,7 +22,6 @@ PARTS = $(shell find ssh_config_parts -type f)
 .PHONY: all install install-links install-parts install-program install-nolinks uninstall
 
 checkroot:
-	@echo "running checkroot"
 	@# check if run as root
 	@runner=`whoami` ; \
 	if test "$$runner" != "root" -a "$(PREFIX)" = "/usr/local" ; \
