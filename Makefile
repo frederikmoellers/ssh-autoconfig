@@ -10,7 +10,7 @@ LINK ?= /bin/ln
 PREFIX ?= /usr/local
 BINDIR = $(DESTDIR)$(PREFIX)/sbin
 # WARNING: This path doesn't work with PREFIX=/usr! (TODO: Use setuptools?)
-LIBDIR = $(DESTDIR)$(PREFIX)/lib/python3.5/dist-packages/ssh_autoconfig
+LIBDIR = $(DESTDIR)$(PREFIX)/lib/python3.7/dist-packages/ssh_autoconfig
 PARTSDIR ?= /etc/ssh/ssh_config_parts
 # links to the execuatble
 LINKS = /etc/network/if-up.d/ssh-autoconfig /etc/network/if-post-down.d/ssh-autoconfig
