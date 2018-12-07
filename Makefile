@@ -15,8 +15,8 @@ PARTSDIR ?= /etc/ssh/ssh_config_parts
 # links to the execuatble
 LINKS = /etc/network/if-up.d/ssh-autoconfig /etc/network/if-post-down.d/ssh-autoconfig
 
-BIN = ssh-autoconfig
-LIBS = __init__.py zones.py zones_user.py
+BIN = bin/ssh-autoconfig
+LIBS = $(shell find ssh_autoconfig -type f)
 PARTS = $(shell find ssh_config_parts -type f)
 
 .PHONY: all install install-links install-parts install-program install-nolinks uninstall
@@ -36,7 +36,7 @@ all:
 install: install-links install-nolinks
 
 install-links: checkroot
-	$(foreach linkloc, $(LINKS), $(LINK) -fs $(BINDIR)/$(BIN) $(linkloc);)
+	$(foreach linkloc, $(LINKS), $(LINK) -fs $(BINDIR)/$(notdir $(BIN)) $(linkloc);)
 
 install-parts: checkroot
 	$(INSTALL) -m 0644 -D -t $(PARTSDIR) $(PARTS)
